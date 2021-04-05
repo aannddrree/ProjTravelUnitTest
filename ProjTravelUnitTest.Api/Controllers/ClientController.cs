@@ -104,7 +104,7 @@ namespace ProjTravelUnitTest.Api.Controllers
             return _context.Client.Any(e => e.Id == id);
         }
 
-        public int getMaxId()
+        private int getMaxId()
         {
             return _context.Client.OrderByDescending(u => u.Id).FirstOrDefault().Id;
         }
