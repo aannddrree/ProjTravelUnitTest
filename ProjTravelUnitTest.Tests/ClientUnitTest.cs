@@ -1,92 +1,126 @@
-using Microsoft.AspNetCore.Mvc.Testing;
+﻿using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using Moq;
-using Newtonsoft.Json;
-using ProjTravelUnitTest.Api;
 using ProjTravelUnitTest.Api.Controllers;
 using ProjTravelUnitTest.Api.Models;
 using System;
 using System.Collections.Generic;
-using System.Net;
-using System.Net.Http;
-using System.Net.Http.Headers;
+using System.Linq;
 using System.Text;
+using System.Threading.Tasks;
 using Xunit;
 
 namespace ProjTravelUnitTest.Tests
 {
     public class ClientUnitTest
     {
-        public HttpClient _client { get; }
+        private DbContextOptions<TravelContext> options;
 
-        public ClientUnitTest()
+        private void InitializeDataBase()
         {
-            var appFactory = new WebApplicationFactory<Startup>();
-            _client = appFactory.CreateClient();
-            _client.DefaultRequestHeaders.Accept
-                  .Add(new MediaTypeWithQualityHeaderValue("application/json"));
+            // Create a Temporary Database
+            options = new DbContextOptionsBuilder<TravelContext>()
+                .UseInMemoryDatabase(databaseName: Guid.NewGuid().ToString())
+                .Options;
+
+            // Insert data into the database using one instance of the context
+            using (var context = new TravelContext(options))
+            {
+                context.Client.Add(new Client { Id = 1, Name = "Name 1", NumberOfChildren = 1, Telephone = "16 99999 8888", BirthdayDate = DateTime.Now });
+                context.Client.Add(new Client { Id = 2, Name = "Name 1", NumberOfChildren = 2, Telephone = "16 99999 6666", BirthdayDate = DateTime.Now });
+                context.Client.Add(new Client { Id = 3, Name = "Name 1", NumberOfChildren = 3, Telephone = "16 99999 8877", BirthdayDate = DateTime.Now });
+                context.SaveChanges();
+            }
         }
 
         [Fact]
-        public async void GetAllClients()
+        public void GetAll()
         {
-            var response = await _client.GetAsync("/api/Client");
-            Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+            InitializeDataBase();
+
+            // Use a clean instance of the context to run the test
+            using (var context = new TravelContext(options))
+            {
+                ClientController clientController = new ClientController(context);
+                IEnumerable<Client> clients = clientController.GetClient().Result.Value;
+    
+                Assert.Equal(3, clients.Count());
+            }
         }
 
         [Fact]
-        public async void GetCountClients()
+        public void GetbyId()
         {
-            var response = await _client.GetAsync("/api/Client");
-            var clients = JsonConvert.DeserializeObject<Client[]>(await response.Content.ReadAsStringAsync());
-            Assert.True(clients.Length >= 1);
+            InitializeDataBase();
+
+            // Use a clean instance of the context to run the test
+            using (var context = new TravelContext(options))
+            {
+                int clientId = 2;
+                ClientController clientController = new ClientController(context);
+                Client client = clientController.GetClient(clientId).Result.Value;
+                Assert.Equal(2, client.Id);
+            }
         }
 
         [Fact]
-        public async void PostClient()
+        public void Create()
         {
+            InitializeDataBase();
 
             Client client = new Client()
             {
-                BirthdayDate = DateTime.Now,
-                Name = "Jos� Silva",
+                Id = 4,
+                Name = "José Silva",
+                Telephone = "16 98888 7777",
                 NumberOfChildren = 2,
-                Telephone = "16 99999 2222"
+                BirthdayDate = DateTime.Now
             };
 
-            var jsonContent = JsonConvert.SerializeObject(client);
-            var contentString = new StringContent(jsonContent, Encoding.UTF8, "application/json");
-            var response = await _client.PostAsync("/api/Client", contentString);
-
-            Assert.Equal(HttpStatusCode.Created, response.StatusCode);
+            // Use a clean instance of the context to run the test
+            using (var context = new TravelContext(options))
+            {
+                ClientController clientController = new ClientController(context);
+                Client cli = clientController.PostClient(client).Result.Value;
+                Assert.Equal(4, client.Id);
+            }
         }
 
         [Fact]
-        public async void PutClient()
+        public void Update()
         {
-            int id = 3;
+            InitializeDataBase();
+
             Client client = new Client()
             {
                 Id = 3,
-                BirthdayDate = DateTime.Now,
-                Name = "Jos� Silva Alterado",
-                NumberOfChildren = 1,
-                Telephone = "16 99999 2222"
+                Name = "José Silva",
+                Telephone = "16 98888 7777",
+                NumberOfChildren = 2,
+                BirthdayDate = DateTime.Now
             };
 
-            var jsonContent = JsonConvert.SerializeObject(client);
-            var contentString = new StringContent(jsonContent, Encoding.UTF8, "application/json");
-            var response = await _client.PutAsync("/api/Client/" + id, contentString);
-
-            Assert.Equal(HttpStatusCode.NoContent, response.StatusCode);
+            // Use a clean instance of the context to run the test
+            using (var context = new TravelContext(options))
+            {
+                ClientController clientController = new ClientController(context);
+                Client cli = clientController.PutClient(3, client).Result.Value;
+                Assert.Equal("José Silva", client.Name);
+            }
         }
 
         [Fact]
-        public async void DeleteClient()
+        public void Delete()
         {
-            int id = 3;
-            var response = await _client.DeleteAsync("/api/Client/" + id);
+            InitializeDataBase();
 
-            Assert.Equal(HttpStatusCode.NoContent, response.StatusCode);
+            // Use a clean instance of the context to run the test
+            using (var context = new TravelContext(options))
+            {
+                ClientController clientController = new ClientController(context);
+                Client client = clientController.DeleteClient(2).Result.Value;
+                Assert.Null(client);
+            }
         }
     }
 }
