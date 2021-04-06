@@ -57,7 +57,7 @@ namespace ProjTravelUnitTest.Tests
             var contentString = new StringContent(jsonContent, Encoding.UTF8, "application/json");
             var response = await _client.PostAsync("/api/Client", contentString);
 
-            Assert.Equal(HttpStatusCode.Created, response.StatusCode);
+            Assert.Equal(HttpStatusCode.OK, response.StatusCode);
         }
         /*
                 [Fact]

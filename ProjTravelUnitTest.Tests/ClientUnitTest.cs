@@ -82,7 +82,7 @@ namespace ProjTravelUnitTest.Tests
             {
                 ClientController clientController = new ClientController(context);
                 Client cli = clientController.PostClient(client).Result.Value;
-                Assert.Equal(4, client.Id);
+                Assert.Equal(4, cli.Id);
             }
         }
 
@@ -105,7 +105,7 @@ namespace ProjTravelUnitTest.Tests
             {
                 ClientController clientController = new ClientController(context);
                 Client cli = clientController.PutClient(3, client).Result.Value;
-                Assert.Equal("José Silva", client.Name);
+                Assert.Equal("José Silva", cli.Name);
             }
         }
 

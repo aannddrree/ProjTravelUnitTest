@@ -69,7 +69,7 @@ namespace ProjTravelUnitTest.Api.Controllers
                 }
             }
 
-            return CreatedAtAction("GetClient", new { id = client.Id }, client);
+            return await _context.Client.FindAsync(client.Id);
         }
 
         // POST: api/Client
@@ -79,8 +79,8 @@ namespace ProjTravelUnitTest.Api.Controllers
         {
             _context.Client.Add(client);
             await _context.SaveChangesAsync();
+            return await _context.Client.FindAsync(client.Id);
 
-            return CreatedAtAction("GetClient", new { id = client.Id }, client);
         }
 
         // DELETE: api/Client/5
