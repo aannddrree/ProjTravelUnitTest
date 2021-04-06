@@ -8,7 +8,8 @@
 
 - Criar os projetos:
 
-  dotnet new webapi -o ProjTravelUnitTest.Api 
+  dotnet new webapi -o ProjTravelUnitTest.Api
+  
   dotnet new xunit  -o ProjTravelUnitTest.Tests
 
 - Adicionando projetos a solução:
@@ -19,17 +20,24 @@
 - Criar o controller + Context:
 
   dotnet add package Microsoft.VisualStudio.Web.CodeGeneration.Design
+  
   dotnet add package Microsoft.EntityFrameworkCore.Design
+  
   dotnet add package Microsoft.EntityFrameworkCore.SqlServer
+  
   dotnet tool install -g dotnet-aspnet-codegenerator
+  
 
   dotnet aspnet-codegenerator controller -name ClientController -async -api -m Client -dc ClientContext -outDir Controllers
 
 - Gerar Tabelas:
 
   dotnet tool install --global dotnet-ef
+  
   dotnet ef migrations add v1
+  
   dotnet ef database update
+  
 
 - Executar o Projeto Api:
 
